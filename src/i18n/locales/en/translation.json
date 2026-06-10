@@ -35,7 +35,8 @@
   },
   "tabs": {
     "dashboard": "Dashboard",
-    "profile": "Profile"
+    "profile": "Profile",
+    "settings": "Settings"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -69,9 +70,10 @@
       "updated": "Updated",
       "inactive": "Inactive",
       "lowStock": "Low Stock",
-      "editProduct": "✏  Edit Product",
-      "deactivateProduct": "🗑  Deactivate",
-      "notFound": "Product not found",
+    "noImages": "No images",
+    "editProduct": "✏  Edit Product",
+    "deactivateProduct": "🗑  Deactivate",
+    "notFound": "Product not found",
       "failedToLoad": "Failed to load product",
       "deactivateConfirm": "Are you sure you want to deactivate \"{{name}}\"?",
       "deactivateTitle": "Deactivate Product",
@@ -167,6 +169,14 @@
     "name": "Name",
     "logout": "🚪  Logout",
     "logoutConfirm": "Are you sure you want to logout?",
-    "logoutTitle": "Logout"
+    "logoutTitle": "Logout",
+    "settings": "Settings"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "languageAuto": "Auto (Device)",
+    "languageVi": "Tiếng Việt",
+    "languageEn": "English"
   }
 }

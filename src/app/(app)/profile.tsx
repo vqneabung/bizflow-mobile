@@ -46,6 +46,15 @@ export default function Profile() {
       </View>
 
       {/* Logout button */}
+      {/* Settings link */}
+      <TouchableOpacity
+        style={styles.settingsBtn}
+        onPress={() => router.push('/(app)/settings')}
+      >
+        <Text style={styles.settingsText}>⚙️ {t('profile.settings')}</Text>
+      </TouchableOpacity>
+
+      {/* Logout button */}
       <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
         <Text style={styles.logoutText}>{t('profile.logout')}</Text>
       </TouchableOpacity>
@@ -85,6 +94,16 @@ const styles = StyleSheet.create({
   },
   infoLabel: { fontSize: 14, color: '#666' },
   infoValue: { fontSize: 14, color: '#1a1a1a', fontWeight: '500' },
+
+  // Settings
+  settingsBtn: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 14,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  settingsText: { color: '#7c3aed', fontSize: 15, fontWeight: '600' },
 
   // Logout
   logoutBtn: {

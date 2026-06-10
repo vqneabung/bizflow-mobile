@@ -35,7 +35,8 @@
   },
   "tabs": {
     "dashboard": "Bảng điều khiển",
-    "profile": "Hồ sơ"
+    "profile": "Hồ sơ",
+    "settings": "Cài đặt"
   },
   "dashboard": {
     "title": "Bảng điều khiển",
@@ -69,9 +70,10 @@
       "updated": "Ngày cập nhật",
       "inactive": "Ngưng",
       "lowStock": "Sắp hết",
-      "editProduct": "✏  Sửa sản phẩm",
-      "deactivateProduct": "🗑  Vô hiệu",
-      "notFound": "Không tìm thấy sản phẩm",
+    "noImages": "Không có hình ảnh",
+    "editProduct": "✏  Sửa sản phẩm",
+    "deactivateProduct": "🗑  Vô hiệu",
+    "notFound": "Không tìm thấy sản phẩm",
       "failedToLoad": "Không thể tải sản phẩm",
       "deactivateConfirm": "Bạn chắc chắn muốn vô hiệu \"{{name}}\"?",
       "deactivateTitle": "Vô hiệu sản phẩm",
@@ -167,6 +169,14 @@
     "name": "Tên",
     "logout": "🚪  Đăng xuất",
     "logoutConfirm": "Bạn chắc chắn muốn đăng xuất?",
-    "logoutTitle": "Đăng xuất"
+    "logoutTitle": "Đăng xuất",
+    "settings": "Cài đặt"
+  },
+  "settings": {
+    "title": "Cài đặt",
+    "language": "Ngôn ngữ",
+    "languageAuto": "Theo thiết bị",
+    "languageVi": "Tiếng Việt",
+    "languageEn": "English"
   }
 }

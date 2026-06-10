@@ -17,6 +17,7 @@ import { useLocalSearchParams, router, type Href } from 'expo-router'
 import * as productService from '@/services/products'
 import type { ProductResponse } from '@/types/product'
 import { useTranslation } from 'react-i18next'
+import ProductImages from '@/components/ProductImages'
 
 export default function ProductDetail() {
   const { t } = useTranslation()
@@ -115,6 +116,9 @@ export default function ProductDetail() {
 
         <Text style={styles.price}>{product.price.toLocaleString()} đ</Text>
       </View>
+
+      {/* Product images */}
+      <ProductImages imageKeys={product.imageKeys} />
 
       {/* Info grid */}
       <View style={styles.card}>

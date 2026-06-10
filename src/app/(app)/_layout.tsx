@@ -1,7 +1,7 @@
 /**
  * (app)/_layout.tsx — Tab layout cho authenticated screens.
  *
- * Bottom tabs: Dashboard, Profile.
+ * Bottom tabs: Dashboard, Profile, Settings.
  */
 import { Tabs } from 'expo-router'
 import { Text } from 'react-native'
@@ -32,6 +32,13 @@ export default function AppLayout() {
         options={{
           title: t('tabs.profile'),
           tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>👤</Text>,
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: t('tabs.settings'),
+          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>⚙️</Text>,
         }}
       />
     </Tabs>

@@ -38,6 +38,14 @@ export default function DashboardLayout() {
         name="customer/[id]/edit"
         options={{ title: t('customer.editTitle') }}
       />
+      <Stack.Screen
+        name="product/[id]"
+        options={{ title: t('product.detail.title') }}
+      />
+      <Stack.Screen
+        name="product/[id]/edit"
+        options={{ title: t('product.edit.title') }}
+      />
     </Stack>
   )
 }

@@ -15,7 +15,7 @@ import { useEffect } from 'react'
 import { Stack, useRouter, useSegments } from 'expo-router'
 import { ActivityIndicator, View } from 'react-native'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { useAuthStore } from '@/stores'
+import { useAuthStore, useSettingsStore } from '@/stores'
 import { getToken, getStoredUser } from '@/services/auth'
 
 // Initialize i18next
@@ -47,7 +47,10 @@ function AuthGuard() {
 
   // Kiểm tra token từ SecureStore khi app start
   useEffect(() => {
-    const checkAuth = async () => {
+    const init = async () => {
+      // Settings store init
+      await useSettingsStore.getState().init()
+
       try {
         const token = await getToken()
         if (token) {
@@ -64,7 +67,7 @@ function AuthGuard() {
         setLoading(false)
       }
     }
-    checkAuth()
+    init()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auth guard: redirect nếu phiên hết hạn
