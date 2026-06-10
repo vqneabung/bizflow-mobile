@@ -1,11 +1,36 @@
 /**
- * Profile — Thông tin tài khoản.
+ * Profile — Thông tin tài khoản + nút logout.
+ *
+ * Sử dụng Zustand useAuthStore thay vì AuthContext.
+ * Thêm nút Logout để người dùng có thể chủ động đăng xuất.
  */
-import { View, Text, ScrollView, StyleSheet } from 'react-native'
-import { useAuth } from '@/contexts/AuthContext'
+import {
+  View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert,
+} from 'react-native'
+import { router } from 'expo-router'
+import { useAuthStore } from '@/stores'
+import { logoutUser } from '@/services/auth'
 
 export default function Profile() {
-  const { user } = useAuth()
+  const user = useAuthStore((s) => s.user)
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            await logoutUser()
+            // logoutUser tự clearSession() → AuthGuard redirect về login
+          },
+        },
+      ],
+    )
+  }
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -17,6 +42,11 @@ export default function Profile() {
         <InfoRow label="Role" value={user?.role} />
         <InfoRow label="Name" value={user?.name ?? '—'} />
       </View>
+
+      {/* Logout button */}
+      <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+        <Text style={styles.logoutText}>🚪  Logout</Text>
+      </TouchableOpacity>
     </ScrollView>
   )
 }
@@ -53,4 +83,16 @@ const styles = StyleSheet.create({
   },
   infoLabel: { fontSize: 14, color: '#666' },
   infoValue: { fontSize: 14, color: '#1a1a1a', fontWeight: '500' },
+
+  // Logout
+  logoutBtn: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 14,
+    alignItems: 'center',
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: '#fee2e2',
+  },
+  logoutText: { color: '#dc2626', fontSize: 15, fontWeight: '600' },
 })

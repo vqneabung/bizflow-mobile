@@ -2,37 +2,23 @@
  * auth.ts — Auth service (login, register, logout, token management).
  *
  * Flow: form native → POST /api/auth/login → JWT → lưu SecureStore
- * Không dùng OIDC redirect (Cách B) — native form + API.
+ * Không dùng OIDC redirect — native form + API (Cách B).
+ * Sử dụng oauthClient (không cần Bearer token) + Zustand auth store.
  */
 import * as SecureStore from 'expo-secure-store'
-import { api } from './api'
-
-export interface User {
-  id?: string
-  email: string
-  role: string
-  name?: string | null
-}
-
-export interface AuthResponse {
-  success: boolean
-  message: string
-  data?: {
-    token: string
-    email: string
-    role: string
-    name?: string | null
-  }
-}
+import { oauthClient } from './oauth-client'
+import { useAuthStore } from '@/stores'
+import type { User, AuthResponse } from '@/types/auth'
 
 const TOKEN_KEY = 'auth_token'
 const USER_KEY = 'auth_user'
 
 /**
- * Login — gửi email + password → Spring Boot → lưu JWT vào SecureStore.
+ * Login — gửi email + password → Spring Boot → lưu JWT vào SecureStore
+ * sau đó cập nhật Zustand store.
  */
 export async function loginUser(email: string, password: string): Promise<User> {
-  const res = await api.post<AuthResponse>('/auth/login', { email, password })
+  const res = await oauthClient.post<AuthResponse>('/auth/login', { email, password })
   const data = res.data.data
 
   if (!data || !data.token) {
@@ -47,7 +33,12 @@ export async function loginUser(email: string, password: string): Promise<User> 
     name: data.name,
   }))
 
-  return { email: data.email, role: data.role, name: data.name }
+  const user: User = { email: data.email, role: data.role, name: data.name }
+
+  // Update Zustand store
+  useAuthStore.getState().setSession(user)
+
+  return user
 }
 
 /**
@@ -58,7 +49,7 @@ export async function registerUser(
   password: string,
   name?: string,
 ): Promise<User> {
-  const res = await api.post<AuthResponse>('/auth/register', { email, password, name })
+  const res = await oauthClient.post<AuthResponse>('/auth/register', { email, password, name })
   const data = res.data.data
 
   if (!data || !data.token) {
@@ -72,15 +63,21 @@ export async function registerUser(
     name: data.name,
   }))
 
-  return { email: data.email, role: data.role, name: data.name }
+  const user: User = { email: data.email, role: data.role, name: data.name }
+
+  // Update Zustand store
+  useAuthStore.getState().setSession(user)
+
+  return user
 }
 
 /**
- * Logout — xóa token khỏi SecureStore.
+ * Logout — xóa token khỏi SecureStore + clear Zustand store.
  */
 export async function logoutUser(): Promise<void> {
   await SecureStore.deleteItemAsync(TOKEN_KEY)
   await SecureStore.deleteItemAsync(USER_KEY)
+  useAuthStore.getState().clearSession()
 }
 
 /**
@@ -92,6 +89,7 @@ export async function getToken(): Promise<string | null> {
 
 /**
  * Lấy thông tin user từ SecureStore.
+ * Dùng khi app start — trước khi Zustand store được hydrate.
  */
 export async function getStoredUser(): Promise<User | null> {
   try {

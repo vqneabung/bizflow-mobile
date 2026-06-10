@@ -1,17 +1,20 @@
 /**
  * LoginScreen — Form đăng nhập native.
  *
- * Flow: nhập email + password → gọi auth.login() → Spring Boot → JWT → dashboard
+ * Flow: nhập email + password → loginUser() → setSession() → AuthGuard redirect
+ *
+ * DIFFERENCES from old AuthContext version:
+ * - loginUser() tự cập nhật Zustand store (không cần gọi setState)
+ * - Không import useAuth từ AuthContext
  */
 import { useState } from 'react'
 import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, KeyboardAvoidingView, Platform, Alert,
 } from 'react-native'
-import { useAuth } from '@/contexts/AuthContext'
+import { loginUser } from '@/services/auth'
 
 export default function LoginScreen() {
-  const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -24,8 +27,9 @@ export default function LoginScreen() {
 
     setLoading(true)
     try {
-      await login(email.trim(), password)
-      // AuthGuard tự động redirect vào (app)/dashboard
+      await loginUser(email.trim(), password)
+      // loginUser tự setSession vào Zustand store
+      // AuthGuard useEffect will detect isAuthenticated → redirect to dashboard
     } catch (err: any) {
       Alert.alert('Login failed', err?.message || 'Invalid email or password')
     } finally {

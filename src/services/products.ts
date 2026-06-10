@@ -6,7 +6,7 @@
  *   List → PaginatedResponse<ProductResponse>
  *   Single → ApiResponse<ProductResponse>
  */
-import { api } from './api'
+import { apiClient } from './api-client'
 import type {
   ProductResponse,
   PaginatedResponse,
@@ -32,7 +32,7 @@ export async function listProducts(
   if (params.sortDir) query.set('sortDir', params.sortDir)
 
   const qs = query.toString()
-  const res = await api.get<PaginatedResponse<ProductResponse>>(
+  const res = await apiClient.get<PaginatedResponse<ProductResponse>>(
     `/products${qs ? '?' + qs : ''}`,
   )
   return res.data
@@ -42,7 +42,7 @@ export async function listProducts(
 export async function getProduct(
   id: string,
 ): Promise<ApiResponse<ProductResponse>> {
-  const res = await api.get<ApiResponse<ProductResponse>>(`/products/${id}`)
+  const res = await apiClient.get<ApiResponse<ProductResponse>>(`/products/${id}`)
   return res.data
 }
 
@@ -50,7 +50,7 @@ export async function getProduct(
 export async function createProduct(
   data: CreateProductRequest,
 ): Promise<ApiResponse<ProductResponse>> {
-  const res = await api.post<ApiResponse<ProductResponse>>('/products', data)
+  const res = await apiClient.post<ApiResponse<ProductResponse>>('/products', data)
   return res.data
 }
 
@@ -59,7 +59,7 @@ export async function updateProduct(
   id: string,
   data: UpdateProductRequest,
 ): Promise<ApiResponse<ProductResponse>> {
-  const res = await api.put<ApiResponse<ProductResponse>>(
+  const res = await apiClient.put<ApiResponse<ProductResponse>>(
     `/products/${id}`,
     data,
   )
@@ -70,6 +70,6 @@ export async function updateProduct(
 export async function deactivateProduct(
   id: string,
 ): Promise<ApiResponse<null>> {
-  const res = await api.patch<ApiResponse<null>>(`/products/${id}/deactivate`)
+  const res = await apiClient.patch<ApiResponse<null>>(`/products/${id}/deactivate`)
   return res.data
 }

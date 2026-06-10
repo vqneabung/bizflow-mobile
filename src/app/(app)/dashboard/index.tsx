@@ -2,6 +2,7 @@
  * dashboard/index.tsx — Product list (main screen of Dashboard tab).
  *
  * FlatList cards + search bar + FAB "Create" + pull-to-refresh.
+ * Top tab bar for switching between Products and Customers.
  */
 import { useCallback, useEffect, useState } from 'react'
 import {
@@ -13,15 +14,17 @@ import {
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
-  Alert,
 } from 'react-native'
 import { router, type Href } from 'expo-router'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuthStore } from '@/stores'
 import * as productService from '@/services/products'
 import type { ProductResponse } from '@/types/product'
 
+type Section = 'products' | 'customers'
+
 export default function ProductList() {
-  const { user } = useAuth()
+  const user = useAuthStore((s) => s.user)
+  const [section, setSection] = useState<Section>('products')
 
   const [products, setProducts] = useState<ProductResponse[]>([])
   const [search, setSearch] = useState('')
@@ -89,12 +92,11 @@ export default function ProductList() {
   }
 
   const handleCreate = () => {
-    router.push('/dashboard/product/create' as Href)
-  }
-
-  const handleLogout = async () => {
-    // handled by profile tab or alert
-    Alert.alert('Bizflow', 'Logout from Profile tab')
+    if (section === 'products') {
+      router.push('/dashboard/product/create' as Href)
+    } else {
+      router.push('/dashboard/customer/create' as Href)
+    }
   }
 
   /** Render one product card */
@@ -168,51 +170,92 @@ export default function ProductList() {
 
   return (
     <View style={styles.container}>
-      {/* Search bar */}
-      <View style={styles.searchRow}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search products..."
-          placeholderTextColor="#999"
-          value={search}
-          onChangeText={setSearch}
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
+      {/* Section selector */}
+      <View style={styles.sectionRow}>
+        <TouchableOpacity
+          style={[styles.sectionTab, section === 'products' && styles.sectionTabActive]}
+          onPress={() => setSection('products')}
+        >
+          <Text style={[styles.sectionTabText, section === 'products' && styles.sectionTabTextActive]}>
+            📦 Products
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.sectionTab, section === 'customers' && styles.sectionTabActive]}
+          onPress={() => setSection('customers')}
+        >
+          <Text style={[styles.sectionTabText, section === 'customers' && styles.sectionTabTextActive]}>
+            👥 Customers
+          </Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Loading */}
-      {loading && products.length === 0 ? (
-        <ActivityIndicator
-          size="large"
-          color="#7c3aed"
-          style={{ marginTop: 60 }}
-        />
-      ) : (
-        <FlatList
-          data={products}
-          keyExtractor={(item) => item.id}
-          renderItem={renderProduct}
-          ListEmptyComponent={renderEmpty}
-          contentContainerStyle={products.length === 0 ? { flex: 1 } : undefined}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor="#7c3aed"
+      {section === 'products' ? (
+        <>
+          {/* Search bar */}
+          <View style={styles.searchRow}>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search products..."
+              placeholderTextColor="#999"
+              value={search}
+              onChangeText={setSearch}
+              autoCapitalize="none"
+              autoCorrect={false}
             />
-          }
-          onEndReached={onEndReached}
-          onEndReachedThreshold={0.3}
-          ListFooterComponent={
-            loadingMore ? (
-              <ActivityIndicator
-                color="#7c3aed"
-                style={{ padding: 16 }}
-              />
-            ) : null
-          }
-        />
+          </View>
+
+          {/* Loading */}
+          {loading && products.length === 0 ? (
+            <ActivityIndicator
+              size="large"
+              color="#7c3aed"
+              style={{ marginTop: 60 }}
+            />
+          ) : (
+            <FlatList
+              data={products}
+              keyExtractor={(item) => item.id}
+              renderItem={renderProduct}
+              ListEmptyComponent={renderEmpty}
+              contentContainerStyle={products.length === 0 ? { flex: 1 } : undefined}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                  tintColor="#7c3aed"
+                />
+              }
+              onEndReached={onEndReached}
+              onEndReachedThreshold={0.3}
+              ListFooterComponent={
+                loadingMore ? (
+                  <ActivityIndicator
+                    color="#7c3aed"
+                    style={{ padding: 16 }}
+                  />
+                ) : null
+              }
+            />
+          )}
+        </>
+      ) : (
+        /* Customers section — navigation card */
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+          <Text style={{ fontSize: 48, marginBottom: 12 }}>👥</Text>
+          <Text style={{ fontSize: 18, fontWeight: '600', color: '#333', marginBottom: 8 }}>
+            Customer Management
+          </Text>
+          <Text style={{ fontSize: 14, color: '#888', textAlign: 'center', marginBottom: 24 }}>
+            View and manage your customers
+          </Text>
+          <TouchableOpacity
+            style={styles.navBtn}
+            onPress={() => router.push('/dashboard/customer/index' as Href)}
+          >
+            <Text style={styles.navBtnText}>View Customers →</Text>
+          </TouchableOpacity>
+        </View>
       )}
 
       {/* FAB — Create Product */}
@@ -225,6 +268,38 @@ export default function ProductList() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f5f5f5' },
+
+  // Section tabs
+  sectionRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 12,
+    paddingTop: 8,
+    gap: 8,
+  },
+  sectionTab: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  sectionTabActive: {
+    backgroundColor: '#7c3aed',
+    borderColor: '#7c3aed',
+  },
+  sectionTabText: { fontSize: 14, fontWeight: '600', color: '#666' },
+  sectionTabTextActive: { color: '#fff' },
+
+  // Nav button
+  navBtn: {
+    backgroundColor: '#7c3aed',
+    borderRadius: 10,
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+  },
+  navBtnText: { color: '#fff', fontSize: 16, fontWeight: '600' },
 
   // Search
   searchRow: {
