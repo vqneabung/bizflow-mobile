@@ -16,8 +16,10 @@ import {
 import { useLocalSearchParams, router, type Href } from 'expo-router'
 import * as productService from '@/services/products'
 import type { ProductResponse } from '@/types/product'
+import { useTranslation } from 'react-i18next'
 
 export default function ProductDetail() {
+  const { t } = useTranslation()
   const { id } = useLocalSearchParams<{ id: string }>()
 
   const [product, setProduct] = useState<ProductResponse | null>(null)
@@ -33,14 +35,14 @@ export default function ProductDetail() {
       if (res.success && res.data) {
         setProduct(res.data)
       } else {
-        setError(res.message || 'Product not found')
+        setError(res.message || t('product.detail.notFound'))
       }
     } catch (e: any) {
-      setError(e?.message || 'Failed to load product')
+      setError(e?.message || t('product.detail.failedToLoad'))
     } finally {
       setLoading(false)
     }
-  }, [id])
+  }, [id, t])
 
   useEffect(() => {
     load()
@@ -52,19 +54,19 @@ export default function ProductDetail() {
 
   const handleDeactivate = () => {
     Alert.alert(
-      'Deactivate Product',
-      `Are you sure you want to deactivate "${product?.name}"?`,
+      t('product.detail.deactivateTitle'),
+      t('product.detail.deactivateConfirm', { name: product?.name }),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Deactivate',
+          text: t('common.deactivate'),
           style: 'destructive',
           onPress: async () => {
             try {
               await productService.deactivateProduct(id!)
               load()
             } catch (e: any) {
-              Alert.alert('Error', e?.message || 'Failed to deactivate')
+              Alert.alert('Error', e?.message || t('product.detail.failedToDeactivate'))
             }
           },
         },
@@ -85,7 +87,7 @@ export default function ProductDetail() {
       <View style={styles.center}>
         <Text style={styles.errorText}>{error}</Text>
         <TouchableOpacity style={styles.retryBtn} onPress={load}>
-          <Text style={styles.retryText}>Retry</Text>
+          <Text style={styles.retryText}>{t('common.retry')}</Text>
         </TouchableOpacity>
       </View>
     )
@@ -101,12 +103,12 @@ export default function ProductDetail() {
           <Text style={styles.name}>{product.name}</Text>
           {!product.isActive && (
             <View style={styles.inactiveBadge}>
-              <Text style={styles.inactiveText}>Inactive</Text>
+              <Text style={styles.inactiveText}>{t('product.detail.inactive')}</Text>
             </View>
           )}
           {product.isLowStock && (
             <View style={styles.lowBadge}>
-              <Text style={styles.lowText}>Low Stock</Text>
+              <Text style={styles.lowText}>{t('product.detail.lowStock')}</Text>
             </View>
           )}
         </View>
@@ -116,30 +118,30 @@ export default function ProductDetail() {
 
       {/* Info grid */}
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Product Info</Text>
+        <Text style={styles.sectionTitle}>{t('product.detail.productInfo')}</Text>
         <View style={styles.infoGrid}>
-          <InfoRow label="Category" value={product.category ?? '—'} />
-          <InfoRow label="Primary Unit" value={product.primaryUnit} />
-          <InfoRow label="Barcode" value={product.barcode ?? '—'} />
-          <InfoRow label="Cost Price" value={product.costPrice != null ? `${product.costPrice.toLocaleString()} đ` : '—'} />
-          <InfoRow label="Stock" value={String(product.stock)} />
-          <InfoRow label="Min Stock" value={product.minStock != null ? String(product.minStock) : '—'} />
+          <InfoRow label={t('product.detail.category')} value={product.categoryName ?? '—'} />
+          <InfoRow label={t('product.detail.primaryUnit')} value={product.primaryUnitName ?? '—'} />
+          <InfoRow label={t('product.detail.barcode')} value={product.barcode ?? '—'} />
+          <InfoRow label={t('product.detail.costPrice')} value={product.costPrice != null ? `${product.costPrice.toLocaleString()} đ` : '—'} />
+          <InfoRow label={t('product.detail.stock')} value={String(product.stock)} />
+          <InfoRow label={t('product.detail.minStock')} value={product.minStock != null ? String(product.minStock) : '—'} />
         </View>
       </View>
 
       {/* Timestamps */}
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Timeline</Text>
-        <InfoRow label="Created" value={new Date(product.createdAt).toLocaleString('vi-VN')} />
+        <Text style={styles.sectionTitle}>{t('product.detail.timeline')}</Text>
+        <InfoRow label={t('product.detail.created')} value={new Date(product.createdAt).toLocaleString('vi-VN')} />
         {product.updatedAt && (
-          <InfoRow label="Updated" value={new Date(product.updatedAt).toLocaleString('vi-VN')} />
+          <InfoRow label={t('product.detail.updated')} value={new Date(product.updatedAt).toLocaleString('vi-VN')} />
         )}
       </View>
 
       {/* Actions */}
       <View style={styles.actions}>
         <TouchableOpacity style={styles.editBtn} onPress={handleEdit}>
-          <Text style={styles.editBtnText}>✏  Edit Product</Text>
+          <Text style={styles.editBtnText}>✏  {t('product.detail.editProduct')}</Text>
         </TouchableOpacity>
 
         {product.isActive && (
@@ -147,7 +149,7 @@ export default function ProductDetail() {
             style={styles.deactivateBtn}
             onPress={handleDeactivate}
           >
-            <Text style={styles.deactivateBtnText}>🗑  Deactivate</Text>
+            <Text style={styles.deactivateBtnText}>🗑  {t('product.detail.deactivateProduct')}</Text>
           </TouchableOpacity>
         )}
       </View>

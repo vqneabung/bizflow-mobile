@@ -12,16 +12,18 @@ import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, KeyboardAvoidingView, Platform, Alert,
 } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { loginUser } from '@/services/auth'
 
 export default function LoginScreen() {
+  const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
 
   const handleLogin = async () => {
     if (!email.trim() || !password) {
-      Alert.alert('Error', 'Email and password are required')
+      Alert.alert(t('auth.login.error'), t('auth.login.errorMessage'))
       return
     }
 
@@ -31,7 +33,7 @@ export default function LoginScreen() {
       // loginUser tự setSession vào Zustand store
       // AuthGuard useEffect will detect isAuthenticated → redirect to dashboard
     } catch (err: any) {
-      Alert.alert('Login failed', err?.message || 'Invalid email or password')
+      Alert.alert('Login failed', err?.message || t('auth.login.invalidCredentials'))
     } finally {
       setLoading(false)
     }
@@ -46,27 +48,27 @@ export default function LoginScreen() {
         {/* Logo */}
         <Text style={styles.logo}>🏪</Text>
         <Text style={styles.title}>Bizflow</Text>
-        <Text style={styles.subtitle}>Sign in to your account</Text>
+        <Text style={styles.subtitle}>{t('auth.login.subtitle')}</Text>
 
         {/* Email */}
-        <Text style={styles.label}>Email</Text>
+        <Text style={styles.label}>{t('auth.login.email')}</Text>
         <TextInput
           style={styles.input}
           value={email}
           onChangeText={setEmail}
-          placeholder="you@example.com"
+          placeholder={t('auth.login.emailPlaceholder')}
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
         />
 
         {/* Password */}
-        <Text style={styles.label}>Password</Text>
+        <Text style={styles.label}>{t('auth.login.password')}</Text>
         <TextInput
           style={styles.input}
           value={password}
           onChangeText={setPassword}
-          placeholder="Enter your password"
+          placeholder={t('auth.login.passwordPlaceholder')}
           secureTextEntry
         />
 
@@ -77,7 +79,7 @@ export default function LoginScreen() {
           disabled={loading}
         >
           <Text style={styles.buttonText}>
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? t('auth.login.signingIn') : t('auth.login.signIn')}
           </Text>
         </TouchableOpacity>
       </View>

@@ -19,10 +19,12 @@ import { router, type Href } from 'expo-router'
 import { useAuthStore } from '@/stores'
 import * as productService from '@/services/products'
 import type { ProductResponse } from '@/types/product'
+import { useTranslation } from 'react-i18next'
 
 type Section = 'products' | 'customers'
 
 export default function ProductList() {
+  const { t } = useTranslation()
   const user = useAuthStore((s) => s.user)
   const [section, setSection] = useState<Section>('products')
 
@@ -112,13 +114,13 @@ export default function ProductList() {
         </Text>
         {item.isLowStock && (
           <View style={styles.lowStockBadge}>
-            <Text style={styles.lowStockText}>Low</Text>
+            <Text style={styles.lowStockText}>{t('dashboard.lowStock')}</Text>
           </View>
         )}
       </View>
 
       <Text style={styles.cardCategory}>
-        {item.category ?? '—'} · {item.primaryUnit}
+        {item.categoryName ?? '—'} · {item.primaryUnitName ?? '—'}
       </Text>
 
       <View style={styles.cardRow}>
@@ -126,8 +128,8 @@ export default function ProductList() {
           {item.price.toLocaleString()} đ
         </Text>
         <Text style={styles.cardStock}>
-          Stock: {item.stock}
-          {item.minStock != null ? ` (min: ${item.minStock})` : ''}
+          {t('dashboard.stock')}: {item.stock}
+          {item.minStock != null ? ` ${t('dashboard.min')}: ${item.minStock}` : ''}
         </Text>
       </View>
     </TouchableOpacity>
@@ -139,11 +141,11 @@ export default function ProductList() {
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyIcon}>📦</Text>
-        <Text style={styles.emptyTitle}>No products</Text>
+        <Text style={styles.emptyTitle}>{t('dashboard.noProducts')}</Text>
         <Text style={styles.emptySub}>
           {search || category
-            ? 'Try adjusting your search or filter'
-            : 'Tap + to create your first product'}
+            ? t('dashboard.noProductsFilterHint')
+            : t('dashboard.noProductsHint')}
         </Text>
       </View>
     )
@@ -162,7 +164,7 @@ export default function ProductList() {
             fetchProducts(1).finally(() => setLoading(false))
           }}
         >
-          <Text style={styles.retryText}>Retry</Text>
+          <Text style={styles.retryText}>{t('common.retry')}</Text>
         </TouchableOpacity>
       </View>
     )
@@ -177,7 +179,7 @@ export default function ProductList() {
           onPress={() => setSection('products')}
         >
           <Text style={[styles.sectionTabText, section === 'products' && styles.sectionTabTextActive]}>
-            📦 Products
+            📦 {t('dashboard.products')}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -185,7 +187,7 @@ export default function ProductList() {
           onPress={() => setSection('customers')}
         >
           <Text style={[styles.sectionTabText, section === 'customers' && styles.sectionTabTextActive]}>
-            👥 Customers
+            👥 {t('dashboard.customers')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -196,7 +198,7 @@ export default function ProductList() {
           <View style={styles.searchRow}>
             <TextInput
               style={styles.searchInput}
-              placeholder="Search products..."
+              placeholder={t('dashboard.searchProducts')}
               placeholderTextColor="#999"
               value={search}
               onChangeText={setSearch}
@@ -244,16 +246,16 @@ export default function ProductList() {
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
           <Text style={{ fontSize: 48, marginBottom: 12 }}>👥</Text>
           <Text style={{ fontSize: 18, fontWeight: '600', color: '#333', marginBottom: 8 }}>
-            Customer Management
+            {t('dashboard.customerManagement')}
           </Text>
           <Text style={{ fontSize: 14, color: '#888', textAlign: 'center', marginBottom: 24 }}>
-            View and manage your customers
+            {t('dashboard.customerManagementDesc')}
           </Text>
           <TouchableOpacity
             style={styles.navBtn}
             onPress={() => router.push('/dashboard/customer/index' as Href)}
           >
-            <Text style={styles.navBtnText}>View Customers →</Text>
+            <Text style={styles.navBtnText}>{t('dashboard.viewCustomers')}</Text>
           </TouchableOpacity>
         </View>
       )}

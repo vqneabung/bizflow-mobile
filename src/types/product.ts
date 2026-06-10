@@ -13,13 +13,15 @@
 export interface ProductResponse {
   id: string
   name: string
-  category: string | null
-  primaryUnit: string
+  categoryId: string | null
+  categoryName: string | null
+  primaryUnitId: string | null
+  primaryUnitName: string | null
   price: number
   costPrice: number | null
   stock: number
   minStock: number | null
-  imageUrl: string | null
+  imageKeys: string[]
   barcode: string | null
   isActive: boolean
   isLowStock: boolean
@@ -53,26 +55,26 @@ export interface PaginatedResponse<T> {
 /** POST /api/products payload */
 export interface CreateProductRequest {
   name: string
-  primaryUnit: string
   price: number
-  category?: string
+  categoryId?: string
+  primaryUnitId?: string
   costPrice?: number
   stock?: number
   minStock?: number
-  imageUrl?: string
+  imageKeys?: string[]
   barcode?: string
 }
 
 /** PUT /api/products/{id} payload (all fields optional PATCH-style) */
 export interface UpdateProductRequest {
   name?: string
-  primaryUnit?: string
+  categoryId?: string
+  primaryUnitId?: string
   price?: number
-  category?: string
   costPrice?: number
   stock?: number
   minStock?: number
-  imageUrl?: string
+  imageKeys?: string[]
   barcode?: string
 }
 

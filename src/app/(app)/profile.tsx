@@ -7,21 +7,23 @@
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert,
 } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { router } from 'expo-router'
 import { useAuthStore } from '@/stores'
 import { logoutUser } from '@/services/auth'
 
 export default function Profile() {
+  const { t } = useTranslation()
   const user = useAuthStore((s) => s.user)
 
   const handleLogout = () => {
     Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
+      t('profile.logoutTitle'),
+      t('profile.logoutConfirm'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Logout',
+          text: t('profile.logout'),
           style: 'destructive',
           onPress: async () => {
             await logoutUser()
@@ -35,17 +37,17 @@ export default function Profile() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Account Information</Text>
+        <Text style={styles.sectionTitle}>{t('profile.accountInfo')}</Text>
         <View style={styles.divider} />
 
-        <InfoRow label="Email" value={user?.email} />
-        <InfoRow label="Role" value={user?.role} />
-        <InfoRow label="Name" value={user?.name ?? '—'} />
+        <InfoRow label={t('profile.email')} value={user?.email} />
+        <InfoRow label={t('profile.role')} value={user?.role} />
+        <InfoRow label={t('profile.name')} value={user?.name ?? '—'} />
       </View>
 
       {/* Logout button */}
       <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-        <Text style={styles.logoutText}>🚪  Logout</Text>
+        <Text style={styles.logoutText}>{t('profile.logout')}</Text>
       </TouchableOpacity>
     </ScrollView>
   )

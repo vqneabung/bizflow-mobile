@@ -15,9 +15,11 @@ import {
   ActivityIndicator,
 } from 'react-native'
 import { useLocalSearchParams, router } from 'expo-router'
+import { useTranslation } from 'react-i18next'
 import { useCustomerQuery, useUpdateCustomerMutation } from '@/hooks/use-customers'
 
 export default function EditCustomer() {
+  const { t } = useTranslation()
   const { id } = useLocalSearchParams<{ id: string }>()
 
   const [name, setName] = useState('')
@@ -43,7 +45,7 @@ export default function EditCustomer() {
 
   const handleSubmit = async () => {
     if (!name.trim()) {
-      Alert.alert('Validation', 'Customer name is required')
+      Alert.alert(t('customer.nameRequired'), t('customer.nameRequired'))
       return
     }
 
@@ -61,10 +63,10 @@ export default function EditCustomer() {
       if (result.success) {
         router.back()
       } else {
-        Alert.alert('Error', result.message || 'Failed to update customer')
+        Alert.alert(t('common.error'), result.message || t('customer.failedToUpdate'))
       }
     } catch (e: any) {
-      Alert.alert('Error', e?.message || 'Failed to update customer')
+      Alert.alert(t('common.error'), e?.message || t('customer.failedToUpdate'))
     }
   }
 
@@ -79,52 +81,52 @@ export default function EditCustomer() {
   return (
     <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
       <View style={styles.form}>
-        <Text style={styles.label}>Name *</Text>
+        <Text style={styles.label}>{t('customer.name')}</Text>
         <TextInput
           style={styles.input}
           value={name}
           onChangeText={setName}
-          placeholder="Customer name"
+          placeholder={t('customer.namePlaceholder')}
           placeholderTextColor="#999"
           autoCapitalize="words"
         />
 
-        <Text style={styles.label}>Phone</Text>
+        <Text style={styles.label}>{t('customer.phone')}</Text>
         <TextInput
           style={styles.input}
           value={phone}
           onChangeText={setPhone}
-          placeholder="Phone number"
+          placeholder={t('customer.phonePlaceholder')}
           placeholderTextColor="#999"
           keyboardType="phone-pad"
         />
 
-        <Text style={styles.label}>Email</Text>
+        <Text style={styles.label}>{t('customer.email')}</Text>
         <TextInput
           style={styles.input}
           value={email}
           onChangeText={setEmail}
-          placeholder="Email address"
+          placeholder={t('customer.emailPlaceholder')}
           placeholderTextColor="#999"
           keyboardType="email-address"
           autoCapitalize="none"
         />
 
-        <Text style={styles.label}>Address</Text>
+        <Text style={styles.label}>{t('customer.address')}</Text>
         <TextInput
           style={styles.input}
           value={address}
           onChangeText={setAddress}
-          placeholder="Address"
+          placeholder={t('customer.addressPlaceholder')}
           placeholderTextColor="#999"
         />
 
-        <Text style={styles.label}>Note</Text>
+        <Text style={styles.label}>{t('customer.note')}</Text>
         <TextInput
           style={[styles.input, styles.textArea]}
           value={note}
           onChangeText={setNote}
-          placeholder="Notes (optional)"
+          placeholder={t('customer.notePlaceholder')}
           placeholderTextColor="#999"
           multiline
           numberOfLines={3}
@@ -139,7 +141,7 @@ export default function EditCustomer() {
           {mutation.isPending ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.submitText}>Save Changes</Text>
+            <Text style={styles.submitText}>{t('customer.save')}</Text>
           )}
         </TouchableOpacity>
       </View>

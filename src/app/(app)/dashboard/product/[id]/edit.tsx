@@ -15,11 +15,13 @@ import {
   ActivityIndicator,
 } from 'react-native'
 import { useLocalSearchParams, router } from 'expo-router'
+import { useTranslation } from 'react-i18next'
 import * as productService from '@/services/products'
 import type { ProductResponse } from '@/types/product'
 
 export default function EditProduct() {
   const { id } = useLocalSearchParams<{ id: string }>()
+  const { t } = useTranslation()
 
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -41,19 +43,19 @@ export default function EditProduct() {
       if (res.success && res.data) {
         setProduct(res.data)
         setName(res.data.name)
-        setCategory(res.data.category ?? '')
-        setPrimaryUnit(res.data.primaryUnit)
+        setCategory(res.data.categoryName ?? '')
+        setPrimaryUnit(res.data.primaryUnitName ?? '')
         setPrice(String(res.data.price))
         setCostPrice(res.data.costPrice != null ? String(res.data.costPrice) : '')
         setStock(String(res.data.stock))
         setMinStock(res.data.minStock != null ? String(res.data.minStock) : '')
         setBarcode(res.data.barcode ?? '')
       } else {
-        Alert.alert('Error', res.message || 'Product not found')
+        Alert.alert(t('common.error'), res.message || t('product.edit.notFound'))
         router.back()
       }
     } catch (e: any) {
-      Alert.alert('Error', e?.message || 'Failed to load product')
+      Alert.alert(t('common.error'), e?.message || t('product.edit.failedToLoad'))
       router.back()
     } finally {
       setLoading(false)
@@ -71,8 +73,6 @@ export default function EditProduct() {
     try {
       const payload: Record<string, any> = {}
       if (name !== product?.name) payload.name = name.trim()
-      if (category !== (product?.category ?? '')) payload.category = category.trim() || null
-      if (primaryUnit !== product?.primaryUnit) payload.primaryUnit = primaryUnit.trim()
       if (Number(price) !== product?.price) payload.price = Number(price)
       if ((costPrice ? Number(costPrice) : null) !== product?.costPrice) {
         payload.costPrice = costPrice.trim() ? Number(costPrice) : null
@@ -92,10 +92,10 @@ export default function EditProduct() {
       if (res.success) {
         router.back()
       } else {
-        Alert.alert('Error', res.message || 'Failed to update product')
+        Alert.alert(t('common.error'), res.message || t('product.edit.failedToUpdate'))
       }
     } catch (e: any) {
-      Alert.alert('Error', e?.message || 'Network error')
+      Alert.alert(t('common.error'), e?.message || t('product.edit.failedToUpdate'))
     } finally {
       setSubmitting(false)
     }
@@ -116,86 +116,86 @@ export default function EditProduct() {
       keyboardShouldPersistTaps="handled"
     >
       <View style={styles.form}>
-        <Field label="Product name">
+        <Field label={t('product.edit.namePlaceholder')}>
           <TextInput
             style={styles.input}
             value={name}
             onChangeText={setName}
-            placeholder="Product name"
+            placeholder={t('product.edit.namePlaceholder')}
             placeholderTextColor="#999"
           />
         </Field>
 
-        <Field label="Category">
+        <Field label={t('product.edit.categoryPlaceholder')}>
           <TextInput
             style={styles.input}
             value={category}
             onChangeText={setCategory}
-            placeholder="Category"
+            placeholder={t('product.edit.categoryPlaceholder')}
             placeholderTextColor="#999"
           />
         </Field>
 
-        <Field label="Primary unit">
+        <Field label={t('product.create.primaryUnit')}>
           <TextInput
             style={styles.input}
             value={primaryUnit}
             onChangeText={setPrimaryUnit}
-            placeholder="Unit"
+            placeholder={t('product.edit.unitPlaceholder')}
             placeholderTextColor="#999"
           />
         </Field>
 
-        <Field label="Price (VND)">
+        <Field label={t('product.create.price')}>
           <TextInput
             style={styles.input}
             value={price}
             onChangeText={setPrice}
-            placeholder="Price"
+            placeholder={t('product.edit.pricePlaceholder')}
             placeholderTextColor="#999"
             keyboardType="numeric"
           />
         </Field>
 
-        <Field label="Cost price (VND)">
+        <Field label={t('product.create.costPrice')}>
           <TextInput
             style={styles.input}
             value={costPrice}
             onChangeText={setCostPrice}
-            placeholder="Cost price"
+            placeholder={t('product.edit.costPricePlaceholder')}
             placeholderTextColor="#999"
             keyboardType="numeric"
           />
         </Field>
 
-        <Field label="Stock">
+        <Field label={t('product.edit.stockPlaceholder')}>
           <TextInput
             style={styles.input}
             value={stock}
             onChangeText={setStock}
-            placeholder="Stock"
+            placeholder={t('product.edit.stockPlaceholder')}
             placeholderTextColor="#999"
             keyboardType="numeric"
           />
         </Field>
 
-        <Field label="Min stock">
+        <Field label={t('product.edit.minStockPlaceholder')}>
           <TextInput
             style={styles.input}
             value={minStock}
             onChangeText={setMinStock}
-            placeholder="Min stock"
+            placeholder={t('product.edit.minStockPlaceholder')}
             placeholderTextColor="#999"
             keyboardType="numeric"
           />
         </Field>
 
-        <Field label="Barcode">
+        <Field label={t('product.edit.barcodePlaceholder')}>
           <TextInput
             style={styles.input}
             value={barcode}
             onChangeText={setBarcode}
-            placeholder="Barcode"
+            placeholder={t('product.edit.barcodePlaceholder')}
             placeholderTextColor="#999"
             autoCapitalize="none"
           />
@@ -209,7 +209,7 @@ export default function EditProduct() {
           {submitting ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.submitText}>Save Changes</Text>
+            <Text style={styles.submitText}>{t('product.edit.save')}</Text>
           )}
         </TouchableOpacity>
       </View>

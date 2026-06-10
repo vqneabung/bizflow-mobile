@@ -16,8 +16,10 @@ import {
 } from 'react-native'
 import { router } from 'expo-router'
 import * as productService from '@/services/products'
+import { useTranslation } from 'react-i18next'
 
 export default function CreateProduct() {
+  const { t } = useTranslation()
   const [name, setName] = useState('')
   const [category, setCategory] = useState('')
   const [primaryUnit, setPrimaryUnit] = useState('')
@@ -29,10 +31,10 @@ export default function CreateProduct() {
   const [submitting, setSubmitting] = useState(false)
 
   const validate = (): string | null => {
-    if (!name.trim()) return 'Product name is required'
-    if (!primaryUnit.trim()) return 'Primary unit is required'
+    if (!name.trim()) return t('product.create.nameRequired')
+    if (!primaryUnit.trim()) return t('product.create.unitRequired')
     if (!price.trim() || isNaN(Number(price)) || Number(price) <= 0) {
-      return 'Valid price is required'
+      return t('product.create.priceRequired')
     }
     return null
   }
@@ -40,7 +42,7 @@ export default function CreateProduct() {
   const handleSubmit = async () => {
     const err = validate()
     if (err) {
-      Alert.alert('Validation Error', err)
+      Alert.alert(t('product.create.validationError'), err)
       return
     }
 
@@ -48,8 +50,6 @@ export default function CreateProduct() {
     try {
       const payload = {
         name: name.trim(),
-        category: category.trim() || undefined,
-        primaryUnit: primaryUnit.trim(),
         price: Number(price),
         costPrice: costPrice.trim() ? Number(costPrice) : undefined,
         stock: stock.trim() ? Number(stock) : undefined,
@@ -60,7 +60,7 @@ export default function CreateProduct() {
       if (res.success) {
         router.back()
       } else {
-        Alert.alert('Error', res.message || 'Failed to create product')
+        Alert.alert('Error', res.message || t('product.create.failedToCreate'))
       }
     } catch (e: any) {
       Alert.alert('Error', e?.message || 'Network error')
@@ -76,86 +76,86 @@ export default function CreateProduct() {
       keyboardShouldPersistTaps="handled"
     >
       <View style={styles.form}>
-        <Field label="Product name *">
+        <Field label={t('product.create.name')}>
           <TextInput
             style={styles.input}
             value={name}
             onChangeText={setName}
-            placeholder="e.g. Cement PCB40"
+            placeholder={t('product.create.namePlaceholder')}
             placeholderTextColor="#999"
           />
         </Field>
 
-        <Field label="Category">
+        <Field label={t('product.create.category')}>
           <TextInput
             style={styles.input}
             value={category}
             onChangeText={setCategory}
-            placeholder="e.g. Construction"
+            placeholder={t('product.create.categoryPlaceholder')}
             placeholderTextColor="#999"
           />
         </Field>
 
-        <Field label="Primary unit *">
+        <Field label={t('product.create.primaryUnit')}>
           <TextInput
             style={styles.input}
             value={primaryUnit}
             onChangeText={setPrimaryUnit}
-            placeholder="e.g. Bag, Kg, Box"
+            placeholder={t('product.create.primaryUnitPlaceholder')}
             placeholderTextColor="#999"
           />
         </Field>
 
-        <Field label="Price (VND) *">
+        <Field label={t('product.create.price')}>
           <TextInput
             style={styles.input}
             value={price}
             onChangeText={setPrice}
-            placeholder="85000"
+            placeholder={t('product.create.pricePlaceholder')}
             placeholderTextColor="#999"
             keyboardType="numeric"
           />
         </Field>
 
-        <Field label="Cost price (VND)">
+        <Field label={t('product.create.costPrice')}>
           <TextInput
             style={styles.input}
             value={costPrice}
             onChangeText={setCostPrice}
-            placeholder="70000"
+            placeholder={t('product.create.costPricePlaceholder')}
             placeholderTextColor="#999"
             keyboardType="numeric"
           />
         </Field>
 
-        <Field label="Stock">
+        <Field label={t('product.create.stock')}>
           <TextInput
             style={styles.input}
             value={stock}
             onChangeText={setStock}
-            placeholder="0"
+            placeholder={t('product.create.stockPlaceholder')}
             placeholderTextColor="#999"
             keyboardType="numeric"
           />
         </Field>
 
-        <Field label="Min stock">
+        <Field label={t('product.create.minStock')}>
           <TextInput
             style={styles.input}
             value={minStock}
             onChangeText={setMinStock}
-            placeholder="0"
+            placeholder={t('product.create.minStockPlaceholder')}
             placeholderTextColor="#999"
             keyboardType="numeric"
           />
         </Field>
 
-        <Field label="Barcode">
+        <Field label={t('product.create.barcode')}>
           <TextInput
             style={styles.input}
             value={barcode}
             onChangeText={setBarcode}
-            placeholder="Barcode"
+            placeholder={t('product.create.barcodePlaceholder')}
             placeholderTextColor="#999"
             autoCapitalize="none"
           />
@@ -169,7 +169,7 @@ export default function CreateProduct() {
           {submitting ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.submitText}>Save Product</Text>
+            <Text style={styles.submitText}>{t('product.create.save')}</Text>
           )}
         </TouchableOpacity>
       </View>

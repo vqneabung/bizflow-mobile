@@ -18,6 +18,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useAuthStore } from '@/stores'
 import { getToken, getStoredUser } from '@/services/auth'
 
+// Initialize i18next
+import '@/i18n'
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

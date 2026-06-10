@@ -5,8 +5,10 @@
  * trong cùng tab Dashboard với header + back button.
  */
 import { Stack } from 'expo-router'
+import { useTranslation } from 'react-i18next'
 
 export default function DashboardLayout() {
+  const { t } = useTranslation()
   return (
     <Stack
       screenOptions={{
@@ -15,26 +17,26 @@ export default function DashboardLayout() {
         headerTitleStyle: { fontWeight: '600', fontSize: 17 },
       }}
     >
-      <Stack.Screen name="index" options={{ title: 'Products' }} />
+      <Stack.Screen name="index" options={{ title: t('dashboard.products') }} />
       <Stack.Screen
         name="product/create"
-        options={{ title: 'Create Product' }}
+        options={{ title: t('product.create.title') }}
       />
       <Stack.Screen
         name="customer/index"
-        options={{ title: 'Customers' }}
+        options={{ title: t('customer.title') }}
       />
       <Stack.Screen
         name="customer/create"
-        options={{ title: 'Create Customer' }}
+        options={{ title: t('customer.createTitle') }}
       />
       <Stack.Screen
         name="customer/[id]"
-        options={{ title: 'Customer Detail' }}
+        options={{ title: t('customer.detailTitle') }}
       />
       <Stack.Screen
         name="customer/[id]/edit"
-        options={{ title: 'Edit Customer' }}
+        options={{ title: t('customer.editTitle') }}
       />
     </Stack>
   )

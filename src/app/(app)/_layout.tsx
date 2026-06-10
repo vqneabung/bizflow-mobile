@@ -5,8 +5,11 @@
  */
 import { Tabs } from 'expo-router'
 import { Text } from 'react-native'
+import { useTranslation } from 'react-i18next'
 
 export default function AppLayout() {
+  const { t } = useTranslation()
+
   return (
     <Tabs
       screenOptions={{
@@ -19,7 +22,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="dashboard"
         options={{
-          title: 'Dashboard',
+          title: t('tabs.dashboard'),
           headerShown: false,
           tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>📊</Text>,
         }}
@@ -27,7 +30,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: t('tabs.profile'),
           tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>👤</Text>,
         }}
       />

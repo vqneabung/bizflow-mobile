@@ -16,9 +16,11 @@ import {
   ActivityIndicator,
 } from 'react-native'
 import { router } from 'expo-router'
+import { useTranslation } from 'react-i18next'
 import { useCreateCustomerMutation } from '@/hooks/use-customers'
 
 export default function CreateCustomer() {
+  const { t } = useTranslation()
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
@@ -29,7 +31,7 @@ export default function CreateCustomer() {
 
   const handleSubmit = async () => {
     if (!name.trim()) {
-      Alert.alert('Validation', 'Customer name is required')
+      Alert.alert(t('customer.nameRequired'), t('customer.nameRequired'))
       return
     }
 
@@ -44,67 +46,62 @@ export default function CreateCustomer() {
       if (result.success) {
         router.back()
       } else {
-        Alert.alert('Error', result.message || 'Failed to create customer')
+        Alert.alert(t('common.error'), result.message || t('customer.failedToCreate'))
       }
     } catch (e: any) {
-      Alert.alert('Error', e?.message || 'Failed to create customer')
+      Alert.alert(t('common.error'), e?.message || t('customer.failedToCreate'))
     }
   }
 
   return (
     <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
       <View style={styles.form}>
-        {/* Name (required) */}
-        <Text style={styles.label}>Name *</Text>
+        <Text style={styles.label}>{t('customer.name')}</Text>
         <TextInput
           style={styles.input}
           value={name}
           onChangeText={setName}
-          placeholder="Customer name"
+          placeholder={t('customer.namePlaceholder')}
           placeholderTextColor="#999"
           autoCapitalize="words"
         />
 
-        {/* Phone */}
-        <Text style={styles.label}>Phone</Text>
+        <Text style={styles.label}>{t('customer.phone')}</Text>
         <TextInput
           style={styles.input}
           value={phone}
           onChangeText={setPhone}
-          placeholder="Phone number"
+          placeholder={t('customer.phonePlaceholder')}
           placeholderTextColor="#999"
           keyboardType="phone-pad"
         />
 
-        {/* Email */}
-        <Text style={styles.label}>Email</Text>
+        <Text style={styles.label}>{t('customer.email')}</Text>
         <TextInput
           style={styles.input}
           value={email}
           onChangeText={setEmail}
-          placeholder="Email address"
+          placeholder={t('customer.emailPlaceholder')}
           placeholderTextColor="#999"
           keyboardType="email-address"
           autoCapitalize="none"
         />
 
-        {/* Address */}
-        <Text style={styles.label}>Address</Text>
+        <Text style={styles.label}>{t('customer.address')}</Text>
         <TextInput
           style={styles.input}
           value={address}
           onChangeText={setAddress}
-          placeholder="Address"
+          placeholder={t('customer.addressPlaceholder')}
           placeholderTextColor="#999"
         />
 
-        {/* Note */}
-        <Text style={styles.label}>Note</Text>
+        <Text style={styles.label}>{t('customer.note')}</Text>
         <TextInput
           style={[styles.input, styles.textArea]}
           value={note}
           onChangeText={setNote}
-          placeholder="Notes (optional)"
+          placeholder={t('customer.notePlaceholder')}
           placeholderTextColor="#999"
           multiline
           numberOfLines={3}
@@ -120,7 +117,7 @@ export default function CreateCustomer() {
           {mutation.isPending ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.submitText}>Create Customer</Text>
+            <Text style={styles.submitText}>{t('customer.createCustomer')}</Text>
           )}
         </TouchableOpacity>
       </View>

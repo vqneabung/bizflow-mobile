@@ -16,10 +16,12 @@ import {
   FlatList,
 } from 'react-native'
 import { useLocalSearchParams, router, type Href } from 'expo-router'
+import { useTranslation } from 'react-i18next'
 import { useCustomerQuery, useDeactivateCustomerMutation, useCustomerOrdersQuery } from '@/hooks/use-customers'
 import type { OrderSummary } from '@/types/customer'
 
 export default function CustomerDetail() {
+  const { t } = useTranslation()
   const { id } = useLocalSearchParams<{ id: string }>()
   const [ordersPage, setOrdersPage] = useState(1)
 
@@ -37,19 +39,19 @@ export default function CustomerDetail() {
 
   const handleDeactivate = () => {
     Alert.alert(
-      'Deactivate Customer',
-      `Are you sure you want to deactivate "${customer?.name}"?`,
+      t('customer.deactivateTitle'),
+      t('customer.deactivateConfirm', { name: customer?.name }),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Deactivate',
+          text: t('common.deactivate'),
           style: 'destructive',
           onPress: async () => {
             try {
               await deactivateMutation.mutateAsync(id!)
               refetch()
             } catch (e: any) {
-              Alert.alert('Error', e?.message || 'Failed to deactivate')
+              Alert.alert(t('common.error'), e?.message || t('customer.failedToDeactivate'))
             }
           },
         },
@@ -76,10 +78,10 @@ export default function CustomerDetail() {
     return (
       <View style={styles.center}>
         <Text style={styles.errorText}>
-          {(error as any)?.message || 'Customer not found'}
+          {(error as any)?.message || t('customer.notFound')}
         </Text>
         <TouchableOpacity style={styles.retryBtn} onPress={() => refetch()}>
-          <Text style={styles.retryText}>Retry</Text>
+          <Text style={styles.retryText}>{t('common.retry')}</Text>
         </TouchableOpacity>
       </View>
     )
@@ -93,46 +95,46 @@ export default function CustomerDetail() {
           <Text style={styles.name}>{customer.name}</Text>
           {!customer.isActive && (
             <View style={styles.inactiveBadge}>
-              <Text style={styles.inactiveText}>Inactive</Text>
+              <Text style={styles.inactiveText}>{t('customer.inactive')}</Text>
             </View>
           )}
         </View>
 
         <Text style={styles.debtAmount}>
-          Debt: {customer.totalDebt.toLocaleString()} đ
+          {t('customer.debt')}: {customer.totalDebt.toLocaleString()} đ
         </Text>
       </View>
 
       {/* Contact info */}
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Contact</Text>
-        <InfoRow label="Phone" value={customer.phone ?? '—'} />
-        <InfoRow label="Email" value={customer.email ?? '—'} />
-        <InfoRow label="Address" value={customer.address ?? '—'} />
+        <Text style={styles.sectionTitle}>{t('customer.contact')}</Text>
+        <InfoRow label={t('customer.phone')} value={customer.phone ?? '—'} />
+        <InfoRow label={t('customer.email')} value={customer.email ?? '—'} />
+        <InfoRow label={t('customer.address')} value={customer.address ?? '—'} />
       </View>
 
       {/* Notes */}
       {customer.note && (
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Notes</Text>
+          <Text style={styles.sectionTitle}>{t('customer.notes')}</Text>
           <Text style={styles.noteText}>{customer.note}</Text>
         </View>
       )}
 
       {/* Timeline */}
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Timeline</Text>
-        <InfoRow label="Created" value={new Date(customer.createdAt).toLocaleString('vi-VN')} />
+        <Text style={styles.sectionTitle}>{t('customer.timeline')}</Text>
+        <InfoRow label={t('customer.created')} value={new Date(customer.createdAt).toLocaleString('vi-VN')} />
         {customer.updatedAt && (
-          <InfoRow label="Updated" value={new Date(customer.updatedAt).toLocaleString('vi-VN')} />
+          <InfoRow label={t('customer.updated')} value={new Date(customer.updatedAt).toLocaleString('vi-VN')} />
         )}
       </View>
 
       {/* Purchase History */}
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Purchase History</Text>
+        <Text style={styles.sectionTitle}>{t('customer.purchaseHistory')}</Text>
         {orders.length === 0 && !ordersFetching ? (
-          <Text style={styles.emptyOrders}>No orders yet</Text>
+          <Text style={styles.emptyOrders}>{t('customer.noOrders')}</Text>
         ) : (
           <>
             {orders.map((order: OrderSummary) => (
@@ -161,7 +163,7 @@ export default function CustomerDetail() {
       {/* Actions */}
       <View style={styles.actions}>
         <TouchableOpacity style={styles.editBtn} onPress={handleEdit}>
-          <Text style={styles.editBtnText}>✏  Edit Customer</Text>
+          <Text style={styles.editBtnText}>{t('customer.editCustomer')}</Text>
         </TouchableOpacity>
 
         {customer.isActive && (
@@ -169,7 +171,7 @@ export default function CustomerDetail() {
             style={styles.deactivateBtn}
             onPress={handleDeactivate}
           >
-            <Text style={styles.deactivateBtnText}>🗑  Deactivate</Text>
+            <Text style={styles.deactivateBtnText}>{t('customer.deactivateCustomer')}</Text>
           </TouchableOpacity>
         )}
       </View>

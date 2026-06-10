@@ -17,10 +17,12 @@ import {
   Alert,
 } from 'react-native'
 import { router, type Href } from 'expo-router'
+import { useTranslation } from 'react-i18next'
 import { useCustomersQuery } from '@/hooks/use-customers'
 import type { CustomerResponse } from '@/types/customer'
 
 export default function CustomerList() {
+  const { t } = useTranslation()
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
 
@@ -56,7 +58,7 @@ export default function CustomerList() {
         </Text>
         {!item.isActive && (
           <View style={styles.inactiveBadge}>
-            <Text style={styles.inactiveText}>Inactive</Text>
+            <Text style={styles.inactiveText}>{t('customer.inactive')}</Text>
           </View>
         )}
       </View>
@@ -66,7 +68,7 @@ export default function CustomerList() {
 
       <View style={styles.cardFooter}>
         <Text style={styles.debtLabel}>
-          Debt:{' '}
+          {t('customer.debt')}:{' '}
           <Text style={item.totalDebt > 0 ? styles.debtNegative : styles.debtZero}>
             {item.totalDebt.toLocaleString()} đ
           </Text>
@@ -81,11 +83,11 @@ export default function CustomerList() {
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyIcon}>👥</Text>
-        <Text style={styles.emptyTitle}>No customers</Text>
+        <Text style={styles.emptyTitle}>{t('customer.noCustomers')}</Text>
         <Text style={styles.emptySub}>
           {search
-            ? 'Try adjusting your search'
-            : 'Tap + to add your first customer'}
+            ? t('customer.noCustomersFilterHint')
+            : t('customer.noCustomersHint')}
         </Text>
       </View>
     )
@@ -97,10 +99,10 @@ export default function CustomerList() {
       <View style={styles.errorContainer}>
         <Text style={styles.errorIcon}>⚠️</Text>
         <Text style={styles.errorText}>
-          {(error as any)?.message || 'Failed to load customers'}
+          {(error as any)?.message || t('customer.failedToLoad')}
         </Text>
         <TouchableOpacity style={styles.retryBtn} onPress={() => refetch()}>
-          <Text style={styles.retryText}>Retry</Text>
+          <Text style={styles.retryText}>{t('common.retry')}</Text>
         </TouchableOpacity>
       </View>
     )
@@ -112,7 +114,7 @@ export default function CustomerList() {
       <View style={styles.searchRow}>
         <TextInput
           style={styles.searchInput}
-          placeholder="Search customers..."
+          placeholder={t('customer.searchPlaceholder')}
           placeholderTextColor="#999"
           value={search}
           onChangeText={(v) => {
