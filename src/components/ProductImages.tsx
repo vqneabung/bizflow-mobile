@@ -1,15 +1,19 @@
 /**
- * ProductImages — Hiển thị hình ảnh sản phẩm.
+ * ProductImages — Hiển thị hình ảnh sản phẩm với persistent cache.
  *
- * Horizontal FlatList thumbnails → tap để mở Galeria fullscreen với zoom/pan.
- * Yêu cầu:
- * - expo-image (performant image component)
- * - @nandorojo/galeria (fullscreen gallery)
- * - src/services/storage.ts (presigned URL via backend proxy)
+ * Layers:
+ * 1. Hook: useImageUrls(keys) → { urls, isLoading, errors }
+ * 2. Cache: MMKV persistent (50 phút TTL, mirror Next.js Dexie pattern)
+ * 3. API: /api/storage/download-url via Spring Boot proxy
+ * 4. Gallery: react-native-image-viewing (thay thế Galeria vì React 19 compat)
  *
- * Cần dùng `npx expo run:android` vì Galeria yêu cầu Fabric/Native.
+ * States per image:
+ * - Loading: skeleton (ActivityIndicator)
+ * - Success: thumbnail (expo-image)
+ * - Error: error text
+ * - Tap: fullscreen ImageViewing modal
  */
-import { useEffect, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import {
   View,
   Text,
@@ -17,54 +21,43 @@ import {
   Pressable,
   StyleSheet,
   ActivityIndicator,
+  Dimensions,
+  Platform,
 } from 'react-native'
 import { Image } from 'expo-image'
+import ImageViewing from 'react-native-image-viewing'
 import { useTranslation } from 'react-i18next'
-import { getDownloadUrl } from '@/services/storage'
+import { useImageUrls } from '@/hooks/use-image-urls'
 
 interface Props {
   imageKeys: string[]
 }
 
+const THUMB_SIZE = 100
+
 export default function ProductImages({ imageKeys }: Props) {
   const { t } = useTranslation()
-  const [urls, setUrls] = useState<string[]>([])
-  const [loading, setLoading] = useState(true)
+  const { urls, isLoading, errors } = useImageUrls(imageKeys)
   const [galleryIndex, setGalleryIndex] = useState(0)
   const [showGallery, setShowGallery] = useState(false)
 
-  useEffect(() => {
-    let cancelled = false
-
-    const load = async () => {
-      try {
-        const resolved = await Promise.all(imageKeys.map(getDownloadUrl))
-        if (!cancelled) setUrls(resolved)
-      } catch {
-        // silent — hiển thị empty state
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
+  // Build images array for ImageViewing: [{ uri }] or null
+  const imageViewingImages = useMemo(() => {
+    const result: Array<{ uri: string }> = []
+    for (const key of imageKeys) {
+      const url = urls.get(key)
+      if (url) result.push({ uri: url })
     }
+    return result
+  }, [imageKeys, urls])
 
-    if (imageKeys.length > 0) {
-      load()
-    } else {
-      setLoading(false)
-    }
+  const openGallery = useCallback((index: number) => {
+    setGalleryIndex(index)
+    setShowGallery(true)
+  }, [])
 
-    return () => { cancelled = true }
-  }, [imageKeys])
-
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="small" color="#7c3aed" />
-      </View>
-    )
-  }
-
-  if (urls.length === 0) {
+  // ── Empty state (no imageKeys) ──
+  if (imageKeys.length === 0) {
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyText}>{t('product.detail.noImages')}</Text>
@@ -72,72 +65,85 @@ export default function ProductImages({ imageKeys }: Props) {
     )
   }
 
+  // ── Initial loading (chưa có URL nào) ──
+  if (isLoading && urls.size === 0) {
+    return (
+      <View style={styles.loadingContainer}>
+        <FlatList
+          horizontal
+          data={Array(imageKeys.length).fill(null)}
+          keyExtractor={(_, i) => `skeleton-${i}`}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.thumbList}
+          renderItem={() => (
+            <View style={[styles.thumb, styles.skeleton]} />
+          )}
+        />
+      </View>
+    )
+  }
+
+  // ── Render thumbnails + errors ──
   return (
     <View>
-      {/* Thumbnails */}
       <FlatList
         horizontal
-        data={urls}
-        keyExtractor={(url) => url}
+        data={imageKeys}
+        keyExtractor={(key) => key}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.thumbList}
-        renderItem={({ item, index }) => (
-          <Pressable onPress={() => { setGalleryIndex(index); setShowGallery(true) }}>
-            <Image
-              source={{ uri: item }}
-              style={styles.thumb}
-              contentFit="cover"
-              transition={200}
-            />
-          </Pressable>
-        )}
+        renderItem={({ item: key, index }) => {
+          const url = urls.get(key)
+          const error = errors.get(key)
+
+          // Error state
+          if (error) {
+            return (
+              <View style={[styles.thumb, styles.errorBox]}>
+                <Text style={styles.errorIcon}>⚠️</Text>
+              </View>
+            )
+          }
+
+          // Loading state (URL not yet resolved)
+          if (!url) {
+            return <View style={[styles.thumb, styles.skeleton]} />
+          }
+
+          // Success state
+          return (
+            <Pressable onPress={() => openGallery(index)}>
+              <Image
+                source={{ uri: url }}
+                style={styles.thumb}
+                contentFit="cover"
+                transition={200}
+                cachePolicy="memory-disk"
+              />
+            </Pressable>
+          )
+        }}
       />
 
-      {/* Full-screen gallery via Galeria */}
-      {showGallery && (
-        <GaleriaViewer
-          urls={urls}
-          initialIndex={galleryIndex}
-          onClose={() => setShowGallery(false)}
-        />
-      )}
+      {/* Full-screen gallery via react-native-image-viewing */}
+      <ImageViewing
+        images={imageViewingImages}
+        imageIndex={galleryIndex}
+        visible={showGallery}
+        onRequestClose={() => setShowGallery(false)}
+        doubleTapToZoomEnabled
+        swipeToCloseEnabled={Platform.OS === 'ios'}
+        presentationStyle="fullScreen"
+      />
     </View>
   )
 }
 
-/**
- * Galeria inline component — dynamic import khi Galeria thực sự cần.
- */
-function GaleriaViewer({
-  urls,
-  initialIndex,
-  onClose,
-}: {
-  urls: string[]
-  initialIndex: number
-  onClose: () => void
-}) {
-  // Dynamic import để tránh lỗi nếu Galeria chưa cài
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { Galeria } = require('@nandorojo/galeria')
-    return (
-      <Galeria
-        visible
-        images={urls.map((url) => ({ url }))}
-        initialIndex={initialIndex}
-        onClose={onClose}
-      />
-    )
-  } catch {
-    return null
-  }
-}
+const { width: SCREEN_WIDTH } = Dimensions.get('window')
 
 const styles = StyleSheet.create({
   loadingContainer: {
-    padding: 20,
-    alignItems: 'center',
+    paddingTop: 8,
   },
   emptyContainer: {
     padding: 16,
@@ -150,9 +156,20 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   thumb: {
-    width: 100,
-    height: 100,
+    width: THUMB_SIZE,
+    height: THUMB_SIZE,
     borderRadius: 8,
     backgroundColor: '#f0f0f0',
+  },
+  skeleton: {
+    backgroundColor: '#e5e7eb',
+  },
+  errorBox: {
+    backgroundColor: '#fef2f2',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  errorIcon: {
+    fontSize: 20,
   },
 })

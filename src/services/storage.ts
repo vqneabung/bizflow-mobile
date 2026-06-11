@@ -2,7 +2,8 @@
  * storage.ts — MinIO/Storage service.
  *
  * Gọi Spring Boot proxy để lấy presigned download URL.
- * Cache kết quả trong memory để tránh gọi lại API cho cùng objectKey.
+ * In-memory cache cho single URL trong session.
+ * Persistent cache qua image-cache.ts (MMKV).
  */
 import { apiClient } from './api-client'
 
@@ -13,8 +14,8 @@ export interface DownloadUrlResponse {
 }
 
 /**
- * Lấy presigned download URL cho 1 objectKey.
- * Kết quả được cache trong memory (TTL phụ thuộc vào backend).
+ * Lấy presigned download URL cho 1 objectKey (raw API call).
+ * Kết quả được cache trong memory (session-only).
  */
 export async function getDownloadUrl(objectKey: string): Promise<string> {
   if (cache.has(objectKey)) {
@@ -26,4 +27,18 @@ export async function getDownloadUrl(objectKey: string): Promise<string> {
   const url = res.data.data.url
   cache.set(objectKey, url)
   return url
+}
+
+/**
+ * Helper: resolve objectKey → presigned URL, throw nếu fail.
+ * Dùng cho service layer (image-cache.ts gọi cái này).
+ */
+export const storageApi = {
+  getImageUrl: async (objectKey: string): Promise<string> => {
+    const url = await getDownloadUrl(objectKey)
+    if (!url) {
+      throw new Error(`Failed to get presigned URL for ${objectKey}`)
+    }
+    return url
+  },
 }
