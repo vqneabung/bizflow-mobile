@@ -6,6 +6,7 @@
  * Sử dụng oauthClient (không cần Bearer token) + Zustand auth store.
  */
 import * as SecureStore from 'expo-secure-store'
+import { apiClient } from './api-client'
 import { oauthClient } from './oauth-client'
 import { useAuthStore } from '@/stores'
 import type { User, AuthResponse } from '@/types/auth'
@@ -72,12 +73,26 @@ export async function registerUser(
 }
 
 /**
- * Logout — xóa token khỏi SecureStore + clear Zustand store.
+ * Logout — gọi BFF xoá session server-side, sau đó clear local state.
+ *
+ * Flow:
+ * 1. Gọi BFF /auth/logout (cần Bearer token) → xoá session trong session-store
+ * 2. Xoá SecureStore + clear Zustand store
+ *
+ * Nếu BFF không reachable hoặc token expired → vẫn clear local state (finally).
  */
 export async function logoutUser(): Promise<void> {
-  await SecureStore.deleteItemAsync(TOKEN_KEY)
-  await SecureStore.deleteItemAsync(USER_KEY)
-  useAuthStore.getState().clearSession()
+  try {
+    // Gọi BFF xoá session server-side (apiClient tự gắn Bearer token)
+    await apiClient.post('/auth/logout')
+  } catch {
+    // Token đã hết hạn hoặc BFF không reachable → bỏ qua, vẫn clear local
+  } finally {
+    // Luôn clear local state dù BFF có OK hay không
+    await SecureStore.deleteItemAsync(TOKEN_KEY)
+    await SecureStore.deleteItemAsync(USER_KEY)
+    useAuthStore.getState().clearSession()
+  }
 }
 
 /**
