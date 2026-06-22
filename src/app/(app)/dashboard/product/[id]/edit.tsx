@@ -18,6 +18,8 @@ import { useLocalSearchParams, router } from 'expo-router'
 import { useTranslation } from 'react-i18next'
 import * as productService from '@/services/products'
 import type { ProductResponse } from '@/types/product'
+import { ImagePickerInput } from '@/components/ImagePickerInput'
+import { BarcodeScannerModal } from '@/components/BarcodeScannerModal'
 
 export default function EditProduct() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -35,6 +37,8 @@ export default function EditProduct() {
   const [stock, setStock] = useState('')
   const [minStock, setMinStock] = useState('')
   const [barcode, setBarcode] = useState('')
+  const [imageKeys, setImageKeys] = useState<string[]>([])
+  const [scannerVisible, setScannerVisible] = useState(false)
 
   const loadProduct = useCallback(async () => {
     if (!id) return
@@ -50,6 +54,7 @@ export default function EditProduct() {
         setStock(String(res.data.stock))
         setMinStock(res.data.minStock != null ? String(res.data.minStock) : '')
         setBarcode(res.data.barcode ?? '')
+        setImageKeys(res.data.imageKeys ?? [])
       } else {
         Alert.alert(t('common.error'), res.message || t('product.edit.notFound'))
         router.back()
@@ -82,6 +87,9 @@ export default function EditProduct() {
         payload.minStock = minStock.trim() ? Number(minStock) : null
       }
       if (barcode !== (product?.barcode ?? '')) payload.barcode = barcode.trim() || null
+      if (imageKeys.join(',') !== (product?.imageKeys ?? []).join(',')) {
+        payload.imageKeys = imageKeys
+      }
 
       if (Object.keys(payload).length === 0) {
         router.back()
@@ -190,15 +198,32 @@ export default function EditProduct() {
           />
         </Field>
 
-        <Field label={t('product.edit.barcodePlaceholder')}>
-          <TextInput
-            style={styles.input}
-            value={barcode}
-            onChangeText={setBarcode}
-            placeholder={t('product.edit.barcodePlaceholder')}
-            placeholderTextColor="#999"
-            autoCapitalize="none"
+        <Field label={t('product.create.images')}>
+          <ImagePickerInput
+            imageKeys={imageKeys}
+            onKeysChange={setImageKeys}
+            maxImages={5}
           />
+        </Field>
+
+        <Field label={t('product.edit.barcodePlaceholder')}>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <TextInput
+              style={[styles.input, { flex: 1 }]}
+              value={barcode}
+              onChangeText={setBarcode}
+              placeholder={t('product.edit.barcodePlaceholder')}
+              placeholderTextColor="#999"
+              autoCapitalize="none"
+            />
+            <TouchableOpacity
+              style={styles.scanBtn}
+              onPress={() => setScannerVisible(true)}
+              accessibilityLabel={t('product.create.scanBarcode')}
+            >
+              <Text style={styles.scanBtnText}>📷</Text>
+            </TouchableOpacity>
+          </View>
         </Field>
 
         <TouchableOpacity
@@ -213,6 +238,15 @@ export default function EditProduct() {
           )}
         </TouchableOpacity>
       </View>
+
+      <BarcodeScannerModal
+        visible={scannerVisible}
+        onScanned={(code) => {
+          setBarcode(code)
+          setScannerVisible(false)
+        }}
+        onClose={() => setScannerVisible(false)}
+      />
     </ScrollView>
   )
 }
@@ -269,4 +303,13 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   submitText: { color: '#fff', fontSize: 15, fontWeight: '600' },
+  scanBtn: {
+    backgroundColor: '#7c3aed',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minWidth: 44,
+  },
+  scanBtnText: { color: '#fff', fontSize: 18 },
 })

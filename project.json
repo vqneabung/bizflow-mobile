@@ -1,0 +1,41 @@
+{
+  "name": "bizflow-mobile",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "src",
+  "projectType": "application",
+  "tags": ["scope:mobile", "lang:typescript", "framework:expo"],
+  "targets": {
+    "build": {
+      "executor": "@nx/expo:build",
+      "outputs": ["{projectRoot}/dist/**"],
+      "options": {},
+      "cache": true
+    },
+    "dev": {
+      "executor": "@nx/expo:start",
+      "options": {},
+      "cache": false
+    },
+    "export": {
+      "executor": "@nx/expo:export",
+      "outputs": ["{projectRoot}/dist/**"],
+      "options": {}
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx expo lint",
+        "cwd": "{projectRoot}"
+      },
+      "cache": true
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx tsc --noEmit",
+        "cwd": "{projectRoot}"
+      },
+      "cache": true
+    }
+  }
+}

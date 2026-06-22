@@ -46,6 +46,34 @@ export default function DashboardLayout() {
         name="product/[id]/edit"
         options={{ title: t('product.edit.title') }}
       />
+      <Stack.Screen
+        name="order/index"
+        options={{ title: t('order.title') }}
+      />
+      <Stack.Screen
+        name="order/create"
+        options={{ title: t('order.create') }}
+      />
+      <Stack.Screen
+        name="order/[id]"
+        options={{ title: t('order.title') }}
+      />
+      <Stack.Screen
+        name="order/[id]"
+        options={{ title: t('order.title') }}
+      />
+      <Stack.Screen
+        name="stock-import/index"
+        options={{ title: t('stockImport.title') }}
+      />
+      <Stack.Screen
+        name="stock-import/create"
+        options={{ title: t('stockImport.create') }}
+      />
+      <Stack.Screen
+        name="stock-import/[id]"
+        options={{ title: t('stockImport.title') }}
+      />
     </Stack>
   )
 }

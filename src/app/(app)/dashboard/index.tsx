@@ -21,7 +21,7 @@ import * as productService from '@/services/products'
 import type { ProductResponse } from '@/types/product'
 import { useTranslation } from 'react-i18next'
 
-type Section = 'products' | 'customers'
+type Section = 'products' | 'customers' | 'orders' | 'stockImports' | 'reports'
 
 export default function ProductList() {
   const { t } = useTranslation()
@@ -96,8 +96,12 @@ export default function ProductList() {
   const handleCreate = () => {
     if (section === 'products') {
       router.push('/dashboard/product/create' as Href)
-    } else {
+    } else if (section === 'customers') {
       router.push('/dashboard/customer/create' as Href)
+    } else if (section === 'orders') {
+      router.push('/dashboard/order/create' as Href)
+    } else if (section === 'stockImports') {
+      router.push('/dashboard/stock-import/create' as Href)
     }
   }
 
@@ -190,6 +194,30 @@ export default function ProductList() {
             👥 {t('dashboard.customers')}
           </Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.sectionTab, section === 'orders' && styles.sectionTabActive]}
+          onPress={() => setSection('orders')}
+        >
+          <Text style={[styles.sectionTabText, section === 'orders' && styles.sectionTabTextActive]}>
+            📋 {t('dashboard.orders')}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.sectionTab, section === 'stockImports' && styles.sectionTabActive]}
+          onPress={() => setSection('stockImports')}
+        >
+          <Text style={[styles.sectionTabText, section === 'stockImports' && styles.sectionTabTextActive]}>
+            📥 {t('dashboard.stockImports')}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.sectionTab, section === 'reports' && styles.sectionTabActive]}
+          onPress={() => setSection('reports')}
+        >
+          <Text style={[styles.sectionTabText, section === 'reports' && styles.sectionTabTextActive]}>
+            📊 {t('dashboard.reports')}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {section === 'products' ? (
@@ -241,7 +269,7 @@ export default function ProductList() {
             />
           )}
         </>
-      ) : (
+      ) : section === 'customers' ? (
         /* Customers section — navigation card */
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
           <Text style={{ fontSize: 48, marginBottom: 12 }}>👥</Text>
@@ -258,12 +286,63 @@ export default function ProductList() {
             <Text style={styles.navBtnText}>{t('dashboard.viewCustomers')}</Text>
           </TouchableOpacity>
         </View>
+      ) : section === 'orders' ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+          <Text style={{ fontSize: 48, marginBottom: 12 }}>📋</Text>
+          <Text style={{ fontSize: 18, fontWeight: '600', color: '#333', marginBottom: 8 }}>
+            {t('dashboard.orderManagement')}
+          </Text>
+          <Text style={{ fontSize: 14, color: '#888', textAlign: 'center', marginBottom: 24 }}>
+            {t('dashboard.orderManagementDesc')}
+          </Text>
+          <TouchableOpacity
+            style={styles.navBtn}
+            onPress={() => router.push('/dashboard/order/index' as Href)}
+          >
+            <Text style={styles.navBtnText}>{t('dashboard.viewOrders')}</Text>
+          </TouchableOpacity>
+        </View>
+      ) : section === 'stockImports' ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+          <Text style={{ fontSize: 48, marginBottom: 12 }}>📥</Text>
+          <Text style={{ fontSize: 18, fontWeight: '600', color: '#333', marginBottom: 8 }}>
+            {t('dashboard.stockImportManagement')}
+          </Text>
+          <Text style={{ fontSize: 14, color: '#888', textAlign: 'center', marginBottom: 24 }}>
+            {t('dashboard.stockImportManagementDesc')}
+          </Text>
+          <TouchableOpacity
+            style={styles.navBtn}
+            onPress={() => router.push('/dashboard/stock-import/index' as Href)}
+          >
+            <Text style={styles.navBtnText}>{t('dashboard.viewStockImports')}</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        /* Reports section */
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+          <Text style={{ fontSize: 48, marginBottom: 12 }}>📊</Text>
+          <Text style={{ fontSize: 18, fontWeight: '600', color: '#333', marginBottom: 8 }}>
+            {t('dashboard.reportManagement')}
+          </Text>
+          <Text style={{ fontSize: 14, color: '#888', textAlign: 'center', marginBottom: 24 }}>
+            {t('dashboard.reportManagementDesc')}
+          </Text>
+          <TouchableOpacity
+            style={styles.navBtn}
+            onPress={() => router.push('/dashboard/report/index' as Href)}
+          >
+            <Text style={styles.navBtnText}>{t('dashboard.viewReports')}</Text>
+          </TouchableOpacity>
+        </View>
       )}
 
-      {/* FAB — Create Product */}
-      <TouchableOpacity style={styles.fab} onPress={handleCreate}>
-        <Text style={styles.fabText}>+</Text>
-      </TouchableOpacity>
+      {/* FAB — Create */}
+      {section !== 'reports' && (
+        <TouchableOpacity style={styles.fab} onPress={handleCreate}>
+          <Text style={styles.fabText}>+</Text>
+        </TouchableOpacity>
+      )}
     </View>
   )
 }
@@ -274,12 +353,14 @@ const styles = StyleSheet.create({
   // Section tabs
   sectionRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     paddingHorizontal: 12,
     paddingTop: 8,
     gap: 8,
   },
   sectionTab: {
     flex: 1,
+    minWidth: '30%',
     paddingVertical: 10,
     borderRadius: 10,
     alignItems: 'center',

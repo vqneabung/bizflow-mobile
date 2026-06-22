@@ -17,6 +17,8 @@ import {
 import { router } from 'expo-router'
 import * as productService from '@/services/products'
 import { useTranslation } from 'react-i18next'
+import { ImagePickerInput } from '@/components/ImagePickerInput'
+import { BarcodeScannerModal } from '@/components/BarcodeScannerModal'
 
 export default function CreateProduct() {
   const { t } = useTranslation()
@@ -28,6 +30,8 @@ export default function CreateProduct() {
   const [stock, setStock] = useState('')
   const [minStock, setMinStock] = useState('')
   const [barcode, setBarcode] = useState('')
+  const [imageKeys, setImageKeys] = useState<string[]>([])
+  const [scannerVisible, setScannerVisible] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
   const validate = (): string | null => {
@@ -55,6 +59,7 @@ export default function CreateProduct() {
         stock: stock.trim() ? Number(stock) : undefined,
         minStock: minStock.trim() ? Number(minStock) : undefined,
         barcode: barcode.trim() || undefined,
+        imageKeys: imageKeys.length > 0 ? imageKeys : undefined,
       }
       const res = await productService.createProduct(payload)
       if (res.success) {
@@ -150,15 +155,32 @@ export default function CreateProduct() {
           />
         </Field>
 
-        <Field label={t('product.create.barcode')}>
-          <TextInput
-            style={styles.input}
-            value={barcode}
-            onChangeText={setBarcode}
-            placeholder={t('product.create.barcodePlaceholder')}
-            placeholderTextColor="#999"
-            autoCapitalize="none"
+        <Field label={t('product.create.images')}>
+          <ImagePickerInput
+            imageKeys={imageKeys}
+            onKeysChange={setImageKeys}
+            maxImages={5}
           />
+        </Field>
+
+        <Field label={t('product.create.barcode')}>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <TextInput
+              style={[styles.input, { flex: 1 }]}
+              value={barcode}
+              onChangeText={setBarcode}
+              placeholder={t('product.create.barcodePlaceholder')}
+              placeholderTextColor="#999"
+              autoCapitalize="none"
+            />
+            <TouchableOpacity
+              style={styles.scanBtn}
+              onPress={() => setScannerVisible(true)}
+              accessibilityLabel={t('product.create.scanBarcode')}
+            >
+              <Text style={styles.scanBtnText}>📷</Text>
+            </TouchableOpacity>
+          </View>
         </Field>
 
         <TouchableOpacity
@@ -173,6 +195,15 @@ export default function CreateProduct() {
           )}
         </TouchableOpacity>
       </View>
+
+      <BarcodeScannerModal
+        visible={scannerVisible}
+        onScanned={(code) => {
+          setBarcode(code)
+          setScannerVisible(false)
+        }}
+        onClose={() => setScannerVisible(false)}
+      />
     </ScrollView>
   )
 }
@@ -224,4 +255,13 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   submitText: { color: '#fff', fontSize: 15, fontWeight: '600' },
+  scanBtn: {
+    backgroundColor: '#7c3aed',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minWidth: 44,
+  },
+  scanBtnText: { color: '#fff', fontSize: 18 },
 })
