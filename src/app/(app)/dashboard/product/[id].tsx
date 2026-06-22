@@ -12,10 +12,11 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
+  FlatList,
 } from 'react-native'
 import { useLocalSearchParams, router, type Href } from 'expo-router'
 import * as productService from '@/services/products'
-import type { ProductResponse } from '@/types/product'
+import type { ProductResponse, InventoryHistoryResponse } from '@/types/product'
 import { useTranslation } from 'react-i18next'
 import ProductImages from '@/components/ProductImages'
 
@@ -26,6 +27,7 @@ export default function ProductDetail() {
   const [product, setProduct] = useState<ProductResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [history, setHistory] = useState<InventoryHistoryResponse[]>([])
 
   const load = useCallback(async () => {
     if (!id) return
@@ -48,6 +50,24 @@ export default function ProductDetail() {
   useEffect(() => {
     load()
   }, [load])
+
+  useEffect(() => {
+    if (!id) return
+    let cancelled = false
+    productService
+      .getInventoryHistory(id)
+      .then((res) => {
+        if (!cancelled && res.success) {
+          setHistory(res.data)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setHistory([])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [id])
 
   const handleEdit = () => {
     router.push(`/dashboard/product/${id}/edit` as Href)
@@ -139,6 +159,53 @@ export default function ProductDetail() {
         <InfoRow label={t('product.detail.created')} value={new Date(product.createdAt).toLocaleString('vi-VN')} />
         {product.updatedAt && (
           <InfoRow label={t('product.detail.updated')} value={new Date(product.updatedAt).toLocaleString('vi-VN')} />
+        )}
+      </View>
+
+      {/* Inventory history */}
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>{t('product.history.title')}</Text>
+        {history.length === 0 ? (
+          <Text style={styles.emptyText}>{t('product.history.empty')}</Text>
+        ) : (
+          <FlatList
+            data={history}
+            scrollEnabled={false}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => {
+              const movementColor =
+                item.movementType === 'IN'
+                  ? '#16a34a'
+                  : item.movementType === 'OUT'
+                    ? '#dc2626'
+                    : '#ca8a04'
+              const qtyPrefix = item.movementType === 'IN' ? '+' : '-'
+              return (
+                <View style={styles.historyRow}>
+                  <View style={styles.historyTopRow}>
+                    <Text style={styles.historyTime}>
+                      {new Date(item.createdAt).toLocaleDateString('vi-VN')}
+                    </Text>
+                    <Text style={[styles.historyType, { color: movementColor }]}>
+                      {t(`product.history.movement.${item.movementType.toLowerCase()}`)}
+                    </Text>
+                    <Text style={[styles.historyQty, { color: movementColor }]}>
+                      {qtyPrefix}
+                      {item.quantity}
+                    </Text>
+                  </View>
+                  <View style={styles.historyBottomRow}>
+                    <Text style={styles.historyBalance}>
+                      {t('product.history.balanceAfter')}: {item.balanceAfter}
+                    </Text>
+                    {item.referenceNumber ? (
+                      <Text style={styles.historyRef}>{item.referenceNumber}</Text>
+                    ) : null}
+                  </View>
+                </View>
+              )
+            }}
+          />
         )}
       </View>
 
@@ -262,4 +329,27 @@ const styles = StyleSheet.create({
     borderColor: '#fee2e2',
   },
   deactivateBtnText: { color: '#dc2626', fontSize: 15, fontWeight: '600' },
+
+  // Inventory history
+  emptyText: { fontSize: 13, color: '#888', fontStyle: 'italic' },
+  historyRow: {
+    paddingVertical: 8,
+    borderBottomWidth: 0.5,
+    borderBottomColor: '#f0f0f0',
+  },
+  historyTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  historyBottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
+  historyTime: { fontSize: 12, color: '#888' },
+  historyType: { fontSize: 13, fontWeight: '600' },
+  historyQty: { fontSize: 15, fontWeight: '700', minWidth: 40, textAlign: 'right' },
+  historyBalance: { fontSize: 12, color: '#555' },
+  historyRef: { fontSize: 12, color: '#7c3aed', fontWeight: '500' },
 })

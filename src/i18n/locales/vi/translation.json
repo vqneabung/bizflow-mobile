@@ -141,6 +141,16 @@
       "notFound": "Không tìm thấy sản phẩm",
       "failedToLoad": "Không thể tải sản phẩm",
       "failedToUpdate": "Không thể cập nhật sản phẩm"
+    },
+    "history": {
+      "title": "Lịch sử tồn kho",
+      "empty": "Chưa có lịch sử",
+      "balanceAfter": "Tồn sau",
+      "movement": {
+        "in": "Nhập kho",
+        "out": "Bán ra",
+        "return": "Hoàn trả"
+      }
     }
   },
   "customer": {

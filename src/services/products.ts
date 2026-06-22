@@ -14,6 +14,7 @@ import type {
   CreateProductRequest,
   UpdateProductRequest,
   ProductSearchParams,
+  InventoryHistoryResponse,
 } from '@/types/product'
 
 /**
@@ -71,5 +72,20 @@ export async function deactivateProduct(
   id: string,
 ): Promise<ApiResponse<null>> {
   const res = await apiClient.patch<ApiResponse<null>>(`/products/${id}/deactivate`)
+  return res.data
+}
+
+/**
+ * Lịch sử xuất/nhập/hoàn tồn kho của 1 sản phẩm (phân trang, page 1-based).
+ * Gồm các movement: STOCK_IMPORT (nhập), ORDER (bán), RETURN (hoàn trả).
+ */
+export async function getInventoryHistory(
+  productId: string,
+  page = 1,
+  size = 20,
+): Promise<PaginatedResponse<InventoryHistoryResponse>> {
+  const res = await apiClient.get<PaginatedResponse<InventoryHistoryResponse>>(
+    `/products/${productId}/inventory-history?page=${page}&size=${size}`,
+  )
   return res.data
 }

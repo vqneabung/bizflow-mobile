@@ -87,3 +87,19 @@ export interface ProductSearchParams {
   sortBy?: string
   sortDir?: 'asc' | 'desc'
 }
+
+/**
+ * Inventory movement history item (GET /api/products/{id}/inventory-history).
+ * Tracked từ STOCK_IMPORT (nhập) hoặc ORDER (bán) → balanceAfter = tồn kho sau movement.
+ */
+export interface InventoryHistoryResponse {
+  id: string
+  productId: string
+  movementType: 'IN' | 'OUT' | 'RETURN'
+  quantity: number
+  balanceAfter: number
+  refType: 'STOCK_IMPORT' | 'ORDER'
+  refId: string
+  referenceNumber: string | null
+  createdAt: string
+}

@@ -141,6 +141,16 @@
       "notFound": "Product not found",
       "failedToLoad": "Failed to load product",
       "failedToUpdate": "Failed to update product"
+    },
+    "history": {
+      "title": "Inventory History",
+      "empty": "No history yet",
+      "balanceAfter": "Balance After",
+      "movement": {
+        "in": "Stock In",
+        "out": "Stock Out",
+        "return": "Return"
+      }
     }
   },
   "customer": {
